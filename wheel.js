@@ -23,7 +23,6 @@
     const radius = Math.min(w, h) * 0.48;
     const inner = radius * 0.08;
 
-    // outer rim
     ctx.beginPath();
     ctx.arc(cx, cy, radius + 8, 0, Math.PI * 2);
     ctx.fillStyle = "#0f172a";
@@ -76,18 +75,20 @@
     ctx.fill();
   }
 
-  function normalizeSegments(texts) {
-    return texts.map((t, idx) => ({
-      id: (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random())),
-      text: String(t || "").trim(),
-      color: DEFAULT_COLORS[idx % DEFAULT_COLORS.length],
-    }));
+  // يقبل: ["نص", ...] أو [{text, seconds}, ...]
+  function normalizeSegments(items) {
+    return items.map((it, idx) => {
+      const text = (typeof it === "string") ? it : (it?.text ?? "");
+      const seconds = (typeof it === "object" && it) ? Number(it.seconds ?? it.s ?? 60) : 60;
+
+      return {
+        id: (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random())),
+        text: String(text || "").trim(),
+        seconds: clamp(Number.isFinite(seconds) ? seconds : 60, 5, 600),
+        color: DEFAULT_COLORS[idx % DEFAULT_COLORS.length],
+      };
+    });
   }
 
-  window.Wheel = {
-    drawWheel,
-    normalizeSegments,
-    clamp,
-    colors: DEFAULT_COLORS,
-  };
+  window.Wheel = { drawWheel, normalizeSegments, clamp, colors: DEFAULT_COLORS };
 })();
