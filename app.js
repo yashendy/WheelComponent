@@ -1,5 +1,5 @@
 (() => {
-  // عناصر
+  // elements
   const setupView = document.getElementById("setupView");
   const wheelView = document.getElementById("wheelView");
 
@@ -16,7 +16,6 @@
   const wheelCanvas = document.getElementById("wheelCanvas");
 
   const spinBtn = document.getElementById("spinBtn");
-  const spinIcon = document.getElementById("spinIcon");
 
   const winnerWrap = document.getElementById("winnerWrap");
   const winnerText = document.getElementById("winnerText");
@@ -26,7 +25,14 @@
   const timerToggleBtn = document.getElementById("timerToggleBtn");
   const timerResetBtn = document.getElementById("timerResetBtn");
 
-  // State (بديل useState) :contentReference[oaicite:4]{index=4}
+  // share elements
+  const exportLinkBtn = document.getElementById("exportLinkBtn");
+  const importLinkBtn = document.getElementById("importLinkBtn");
+  const shareBox = document.getElementById("shareBox");
+  const shareInput = document.getElementById("shareInput");
+  const copyLinkBtn = document.getElementById("copyLinkBtn");
+
+  // state
   const state = {
     count: 8,
     segments: [],
@@ -39,7 +45,7 @@
     timerId: null,
   };
 
-  // LocalStorage (اختياري)
+  // storage
   const STORAGE_KEY = "wheel_segments_v1";
   const STORAGE_COUNT = "wheel_count_v1";
 
@@ -58,7 +64,6 @@
         }
       }
     } catch {}
-    // افتراضي: 8 خانات فاضية
     state.segments = Wheel.normalizeSegments(Array.from({length: state.count}, () => ""));
   }
 
@@ -69,7 +74,7 @@
     } catch {}
   }
 
-  // Audio (tick/win) نفس فكرة WheelView :contentReference[oaicite:5]{index=5}
+  // audio
   let audioCtx = null;
   function ensureAudio() {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -99,7 +104,7 @@
 
   function playWin() {
     if (!state.soundEnabled) return;
-    if (!audioCtx) return; // نفس سلوكك: لو لسه متعملش AudioContext يبقى مفيش :contentReference[oaicite:6]{index=6}
+    if (!audioCtx) return;
     const ctx = audioCtx;
 
     const osc = ctx.createOscillator();
@@ -125,7 +130,7 @@
     return `${m}:${s}`;
   }
 
-  // Views
+  // views
   function showSetup() {
     setupView.classList.remove("hidden");
     wheelView.classList.add("hidden");
@@ -140,10 +145,10 @@
     spinBtn.disabled = state.isSpinning;
   }
 
-  // Inputs render
+  // inputs
   function rebuildSegmentsInputs() {
     segmentsList.innerHTML = "";
-    countBadge.textContent = `${state.segments.length} من ${countInput.max || 20}`;
+    countBadge.textContent = `${state.segments.length} خانة`;
 
     state.segments.forEach((seg, idx) => {
       const row = document.createElement("div");
@@ -163,7 +168,6 @@
         seg.text = e.target.value;
         validate();
         saveStorage();
-        // إعادة رسم خفيفة عشان النص يظهر (ممكن تلغيها لو مش عايزة)
         Wheel.drawWheel(wheelCanvas, state.segments);
       });
 
@@ -211,7 +215,7 @@
     startBtn.disabled = !ok;
   }
 
-  // Timer (نفس 60 ثانية + Play/Pause/Reset + صوت عند 0) :contentReference[oaicite:7]{index=7}
+  // timer
   function stopTimer() {
     state.timerRunning = false;
     timerToggleBtn.textContent = "▶";
@@ -247,13 +251,11 @@
     else timerText.classList.remove("danger");
   }
 
-  // Winner card
+  // winner
   function showWinner(text) {
     state.winner = text;
     winnerText.textContent = text;
     winnerWrap.classList.remove("hidden");
-
-    // Reset timer لكل تحدي جديد :contentReference[oaicite:8]{index=8}
     resetTimer();
     playWin();
   }
@@ -264,7 +266,7 @@
     stopTimer();
   }
 
-  // Spin mechanics (5000ms transition + tick loop + حساب الفائز) :contentReference[oaicite:9]{index=9} :contentReference[oaicite:10]{index=10}
+  // spin
   function spinWheel() {
     if (state.isSpinning) return;
     if (state.segments.length < 2) return;
@@ -277,12 +279,10 @@
     spinBtn.disabled = true;
     spinBtn.classList.add("spinning");
 
-    // دوران عشوائي (1800..3600) زي عندك تقريباً :contentReference[oaicite:11]{index=11}
     const spins = 1800 + Math.random() * 1800;
     const newRotation = state.rotation + spins;
     state.rotation = newRotation;
 
-    // Tick loop
     const totalDuration = 5000;
     const start = performance.now();
     let tickCount = 0;
@@ -293,7 +293,7 @@
       if (elapsed >= totalDuration) return;
 
       const progress = elapsed / totalDuration;
-      const ease = 1 - Math.pow(1 - progress, 3); // cubic ease out زي عندك :contentReference[oaicite:12]{index=12}
+      const ease = 1 - Math.pow(1 - progress, 3);
       const currentSpins = spins * ease;
       const expectedTicks = Math.floor(currentSpins / sliceDeg);
 
@@ -305,7 +305,6 @@
     };
     requestAnimationFrame(tickLoop);
 
-    // طبّق الدوران على العنصر (CSS transition 5000ms) :contentReference[oaicite:13]{index=13}
     wheelShell.style.transform = `rotate(${state.rotation}deg)`;
   }
 
@@ -317,7 +316,6 @@
     spinBtn.disabled = false;
     spinBtn.classList.remove("spinning");
 
-    // حساب الفائز (نفس منطقك) :contentReference[oaicite:14]{index=14}
     const finalRotation = ((state.rotation % 360) + 360) % 360;
     const winningAngle = (360 - finalRotation) % 360;
     const sliceAngle = 360 / state.segments.length;
@@ -327,13 +325,83 @@
     if (winner && winner.text) showWinner(winner.text);
   }
 
-  // Events
+  // LINK EXPORT/IMPORT
+  function toBase64Url(str){
+    const bytes = new TextEncoder().encode(str);
+    let bin = "";
+    bytes.forEach(b => bin += String.fromCharCode(b));
+    const b64 = btoa(bin);
+    return b64.replaceAll("+","-").replaceAll("/","_").replaceAll("=","");
+  }
+
+  function fromBase64Url(b64url){
+    let b64 = b64url.replaceAll("-","+").replaceAll("_","/");
+    while (b64.length % 4) b64 += "=";
+
+    const bin = atob(b64);
+    const bytes = new Uint8Array([...bin].map(ch => ch.charCodeAt(0)));
+    return new TextDecoder().decode(bytes);
+  }
+
+  function buildShareLink(){
+    const payload = {
+      v: 1,
+      count: state.count,
+      segments: state.segments.map(s => (s.text || "").trim())
+    };
+
+    if (payload.segments.some(t => !t)) {
+      alert("لازم تكتبي كل الخانات قبل التصدير 😄");
+      return null;
+    }
+
+    const encoded = toBase64Url(JSON.stringify(payload));
+    const url = new URL(window.location.href);
+    url.searchParams.set("d", encoded);
+    return url.toString();
+  }
+
+  function importFromLinkData(d){
+    try{
+      const json = fromBase64Url(d);
+      const data = JSON.parse(json);
+
+      if (!data || !Array.isArray(data.segments)) throw new Error("Invalid data");
+      const cnt = Number(data.count) || data.segments.length;
+      const safeCount = Wheel.clamp(cnt, 8, 20);
+
+      const texts = data.segments.slice(0, safeCount).map(x => String(x || "").trim());
+      if (texts.length < 8) throw new Error("Min 8");
+
+      state.count = safeCount;
+      state.segments = Wheel.normalizeSegments(texts);
+
+      countInput.value = String(state.count);
+      rebuildSegmentsInputs();
+      validate();
+      saveStorage();
+      Wheel.drawWheel(wheelCanvas, state.segments);
+
+      return true;
+    } catch (e){
+      console.error(e);
+      alert("اللينك ده مش صالح أو متلخبط 🙃");
+      return false;
+    }
+  }
+
+  function tryAutoImportFromUrl(){
+    const url = new URL(window.location.href);
+    const d = url.searchParams.get("d");
+    if (!d) return false;
+    return importFromLinkData(d);
+  }
+
+  // events
   countInput.addEventListener("change", (e) => setCount(e.target.value));
   countInput.addEventListener("input", (e) => setCount(e.target.value));
 
-  startBtn.addEventListener("click", () => {
-    showWheel();
-  });
+  startBtn.addEventListener("click", () => showWheel());
 
   backBtn.addEventListener("click", () => {
     if (state.isSpinning) return;
@@ -347,12 +415,9 @@
   });
 
   spinBtn.addEventListener("click", spinWheel);
-
   wheelShell.addEventListener("transitionend", handleSpinEnd);
 
-  doneBtn.addEventListener("click", () => {
-    hideWinner();
-  });
+  doneBtn.addEventListener("click", () => hideWinner());
 
   timerToggleBtn.addEventListener("click", () => {
     if (!state.winner) return;
@@ -365,11 +430,48 @@
     resetTimer();
   });
 
-  // Init
+  exportLinkBtn.addEventListener("click", () => {
+    const link = buildShareLink();
+    if (!link) return;
+
+    shareInput.value = link;
+    shareBox.classList.remove("hidden");
+    shareInput.select();
+  });
+
+  copyLinkBtn.addEventListener("click", async () => {
+    try{
+      await navigator.clipboard.writeText(shareInput.value);
+      copyLinkBtn.textContent = "✅ تم النسخ";
+      setTimeout(() => (copyLinkBtn.textContent = "نسخ اللينك"), 1200);
+    } catch {
+      shareInput.select();
+      document.execCommand("copy");
+    }
+  });
+
+  importLinkBtn.addEventListener("click", () => {
+    const d = prompt("حطي اللينك كله أو الجزء اللي بعد ?d= :");
+    if (!d) return;
+
+    try{
+      const maybeUrl = new URL(d);
+      const dd = maybeUrl.searchParams.get("d");
+      if (!dd) { alert("مفيش d في اللينك"); return; }
+      importFromLinkData(dd);
+    } catch {
+      importFromLinkData(d.trim());
+    }
+  });
+
+  // init
   loadStorage();
   countInput.value = String(state.count);
   rebuildSegmentsInputs();
   Wheel.drawWheel(wheelCanvas, state.segments);
   renderTimer();
   showSetup();
+
+  // auto import if link has ?d=
+  tryAutoImportFromUrl();
 })();
