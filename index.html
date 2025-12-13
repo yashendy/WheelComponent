@@ -7,18 +7,15 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- خط عربي لطيف (اختياري) -->
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800;900&display=swap" rel="stylesheet">
 </head>
 
 <body>
-  <!-- خلفية -->
   <div class="bg-blobs" aria-hidden="true">
     <div class="blob blob-a"></div>
     <div class="blob blob-b"></div>
   </div>
 
-  <!-- هيدر التحكم -->
   <header class="topbar">
     <button id="backBtn" class="chip" type="button" disabled>
       <span class="icon">↩</span>
@@ -32,7 +29,7 @@
 
   <main class="container">
 
-    <!-- شاشة الإعداد -->
+    <!-- Setup -->
     <section id="setupView" class="view">
       <div class="title">
         <h1>إعداد العجلة</h1>
@@ -56,6 +53,19 @@
         <div id="segmentsList" class="list" aria-label="قائمة الخانات"></div>
 
         <div class="footer">
+          <!-- Share -->
+          <div class="shareBar">
+            <button id="exportLinkBtn" class="chip" type="button">تصدير لينك</button>
+            <button id="importLinkBtn" class="chip" type="button">استيراد من لينك</button>
+          </div>
+
+          <div id="shareBox" class="shareBox hidden">
+            <input id="shareInput" class="input" type="text" readonly />
+            <button id="copyLinkBtn" class="primary" type="button" style="height:46px;font-size:16px;">
+              نسخ اللينك
+            </button>
+          </div>
+
           <button id="startBtn" class="primary" type="button" disabled>
             <span>ابدأ العجلة</span>
             <span class="icon">⬅</span>
@@ -64,9 +74,8 @@
       </div>
     </section>
 
-    <!-- شاشة العجلة -->
+    <!-- Wheel -->
     <section id="wheelView" class="view hidden">
-      <!-- كارت الفائز + المؤقت -->
       <div id="winnerWrap" class="winnerWrap hidden">
         <div class="winnerCard">
           <p class="winnerLabel">التحدي هو</p>
@@ -78,12 +87,8 @@
 
             <span class="divider"></span>
 
-            <button id="timerToggleBtn" class="tiny" type="button" title="بدء/إيقاف">
-              ▶
-            </button>
-            <button id="timerResetBtn" class="tiny ghost" type="button" title="إعادة تعيين">
-              ↻
-            </button>
+            <button id="timerToggleBtn" class="tiny" type="button" title="بدء/إيقاف">▶</button>
+            <button id="timerResetBtn" class="tiny ghost" type="button" title="إعادة تعيين">↻</button>
           </div>
 
           <button id="doneBtn" class="done" type="button">
@@ -93,7 +98,6 @@
         </div>
       </div>
 
-      <!-- العجلة -->
       <div class="wheelStage">
         <div class="pointer" aria-hidden="true"></div>
 
@@ -104,7 +108,6 @@
         <div class="pin" aria-hidden="true">🎲</div>
       </div>
 
-      <!-- زر الدوران -->
       <div class="spinRow">
         <button id="spinBtn" class="spin" type="button">
           <span class="spinText">دوران!</span>
@@ -114,6 +117,7 @@
     </section>
   </main>
 
+  <!-- IMPORTANT: wheel.js must load before app.js -->
   <script src="wheel.js"></script>
   <script src="app.js"></script>
 </body>
