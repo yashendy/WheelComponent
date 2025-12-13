@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>عجلة الحظ</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- خط عربي لطيف (اختياري) -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800;900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <!-- خلفية -->
+  <div class="bg-blobs" aria-hidden="true">
+    <div class="blob blob-a"></div>
+    <div class="blob blob-b"></div>
+  </div>
+
+  <!-- هيدر التحكم -->
+  <header class="topbar">
+    <button id="backBtn" class="chip" type="button" disabled>
+      <span class="icon">↩</span>
+      <span>تعديل التحديات</span>
+    </button>
+
+    <button id="soundBtn" class="iconbtn" type="button" title="الصوت">
+      <span id="soundIcon" class="icon">🔊</span>
+    </button>
+  </header>
+
+  <main class="container">
+
+    <!-- شاشة الإعداد -->
+    <section id="setupView" class="view">
+      <div class="title">
+        <h1>إعداد العجلة</h1>
+        <p>اكتبي التحديات وحددي عدد الخانات (لا يقل عن 8)</p>
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <label class="label" for="countInput">عدد الخانات</label>
+          <input id="countInput" class="input" type="number" min="8" max="20" value="8" />
+          <span class="hint">الحد الأدنى 8</span>
+        </div>
+
+        <div class="row" style="margin-top:12px;">
+          <div class="subhead">
+            <h3>قائمة الخيارات</h3>
+            <span id="countBadge" class="badge">0</span>
+          </div>
+        </div>
+
+        <div id="segmentsList" class="list" aria-label="قائمة الخانات"></div>
+
+        <div class="footer">
+          <button id="startBtn" class="primary" type="button" disabled>
+            <span>ابدأ العجلة</span>
+            <span class="icon">⬅</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- شاشة العجلة -->
+    <section id="wheelView" class="view hidden">
+      <!-- كارت الفائز + المؤقت -->
+      <div id="winnerWrap" class="winnerWrap hidden">
+        <div class="winnerCard">
+          <p class="winnerLabel">التحدي هو</p>
+          <h2 id="winnerText" class="winnerText">—</h2>
+
+          <div class="timerBox">
+            <span class="icon">⏱</span>
+            <span id="timerText" class="timerText">1:00</span>
+
+            <span class="divider"></span>
+
+            <button id="timerToggleBtn" class="tiny" type="button" title="بدء/إيقاف">
+              ▶
+            </button>
+            <button id="timerResetBtn" class="tiny ghost" type="button" title="إعادة تعيين">
+              ↻
+            </button>
+          </div>
+
+          <button id="doneBtn" class="done" type="button">
+            <span>تم التنفيذ</span>
+            <span class="icon">✅</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- العجلة -->
+      <div class="wheelStage">
+        <div class="pointer" aria-hidden="true"></div>
+
+        <div id="wheelShell" class="wheelShell">
+          <canvas id="wheelCanvas" width="600" height="600" aria-label="عجلة الحظ"></canvas>
+        </div>
+
+        <div class="pin" aria-hidden="true">🎲</div>
+      </div>
+
+      <!-- زر الدوران -->
+      <div class="spinRow">
+        <button id="spinBtn" class="spin" type="button">
+          <span class="spinText">دوران!</span>
+          <span id="spinIcon" class="spinIcon">⟲</span>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <script src="wheel.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
