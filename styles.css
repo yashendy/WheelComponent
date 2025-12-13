@@ -384,3 +384,21 @@ body{
   transition: .15s ease;
 }
 .done:hover{ transform: translateY(-1px); filter: brightness(.98); }
+
+/* share link ui */
+.shareBar{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin: 10px 0 12px;
+}
+.shareBox{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  margin-bottom: 12px;
+}
+.shareBox .input{
+  flex:1;
+  min-width: 220px;
+}
