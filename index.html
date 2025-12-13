@@ -33,7 +33,7 @@
     <section id="setupView" class="view">
       <div class="title">
         <h1>إعداد العجلة</h1>
-        <p>اكتبي التحديات وحددي عدد الخانات (لا يقل عن 8)</p>
+        <p>اكتبي التحديات + حددي وقت كل تحدي (لا يقل عدد الخانات عن 8)</p>
       </div>
 
       <div class="card">
@@ -48,6 +48,10 @@
             <h3>قائمة الخيارات</h3>
             <span id="countBadge" class="badge">0</span>
           </div>
+        </div>
+
+        <div class="hintline">
+          ✍️ التحدي (حتى 100 حرف) + ⏱ وقت التحدي بالثواني
         </div>
 
         <div id="segmentsList" class="list" aria-label="قائمة الخانات"></div>
@@ -117,7 +121,6 @@
     </section>
   </main>
 
-  <!-- IMPORTANT: wheel.js must load before app.js -->
   <script src="wheel.js"></script>
   <script src="app.js"></script>
 </body>
