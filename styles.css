@@ -438,3 +438,26 @@ body{
   flex:1;
   min-width: 220px;
 }
+.wheel-title{
+  text-align: center;
+  font-size: 28px;
+  font-weight: 900;
+  color: #4338ca;
+
+  margin-bottom: 8px;   /* مسافة بينه وبين السهم */
+  letter-spacing: .5px;
+
+  background: rgba(255,255,255,.9);
+  display: inline-block;
+  padding: 8px 22px;
+  border-radius: 999px;
+
+  box-shadow: 0 10px 20px rgba(79,70,229,.25);
+}
+
+/* نخلي العنوان في النص فعليًا */
+#wheelView{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
