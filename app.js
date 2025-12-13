@@ -1,5 +1,4 @@
 (() => {
-  // elements
   const setupView = document.getElementById("setupView");
   const wheelView = document.getElementById("wheelView");
 
@@ -25,29 +24,27 @@
   const timerToggleBtn = document.getElementById("timerToggleBtn");
   const timerResetBtn = document.getElementById("timerResetBtn");
 
-  // share elements
   const exportLinkBtn = document.getElementById("exportLinkBtn");
   const importLinkBtn = document.getElementById("importLinkBtn");
   const shareBox = document.getElementById("shareBox");
   const shareInput = document.getElementById("shareInput");
   const copyLinkBtn = document.getElementById("copyLinkBtn");
 
-  // state
   const state = {
     count: 8,
     segments: [],
     rotation: 0,
     isSpinning: false,
-    winner: null,
+    winner: null,          // { text, seconds }
     soundEnabled: true,
     timeLeft: 60,
     timerRunning: false,
     timerId: null,
+    timerBase: 60,         // وقت التحدي الحالي
   };
 
-  // storage
-  const STORAGE_KEY = "wheel_segments_v1";
-  const STORAGE_COUNT = "wheel_count_v1";
+  const STORAGE_KEY = "wheel_segments_v2";
+  const STORAGE_COUNT = "wheel_count_v2";
 
   function loadStorage() {
     try{
@@ -59,22 +56,24 @@
         const arr = JSON.parse(raw);
         if (Array.isArray(arr) && arr.length >= 8) {
           state.count = Wheel.clamp(arr.length, 8, 20);
-          state.segments = Wheel.normalizeSegments(arr.map(x => (x && x.text) ? x.text : x));
+          state.segments = Wheel.normalizeSegments(arr);
           return;
         }
       }
     } catch {}
-    state.segments = Wheel.normalizeSegments(Array.from({length: state.count}, () => ""));
+
+    // افتراضي: 8 خانات نص فاضي + وقت 60
+    state.segments = Wheel.normalizeSegments(Array.from({length: state.count}, () => ({ text:"", seconds:60 })));
   }
 
   function saveStorage() {
     try{
       localStorage.setItem(STORAGE_COUNT, String(state.count));
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.segments.map(s => s.text)));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.segments.map(s => ({ text: s.text, seconds: s.seconds }))));
     } catch {}
   }
 
-  // audio
+  // Audio
   let audioCtx = null;
   function ensureAudio() {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -130,7 +129,6 @@
     return `${m}:${s}`;
   }
 
-  // views
   function showSetup() {
     setupView.classList.remove("hidden");
     wheelView.classList.add("hidden");
@@ -145,7 +143,6 @@
     spinBtn.disabled = state.isSpinning;
   }
 
-  // inputs
   function rebuildSegmentsInputs() {
     segmentsList.innerHTML = "";
     countBadge.textContent = `${state.segments.length} خانة`;
@@ -158,17 +155,31 @@
       index.className = "index";
       index.textContent = String(idx + 1);
 
-      const input = document.createElement("input");
-      input.className = "segInput";
-      input.type = "text";
-      input.maxLength = 35;
-      input.placeholder = `الخيار ${idx + 1}`;
-      input.value = seg.text || "";
-      input.addEventListener("input", (e) => {
+      const text = document.createElement("textarea");
+      text.className = "segText";
+      text.maxLength = 100;                 // ✅ 100 حرف
+      text.placeholder = `اكتبي التحدي ${idx + 1} (حتى 100 حرف)`;
+      text.value = seg.text || "";
+      text.addEventListener("input", (e) => {
         seg.text = e.target.value;
         validate();
         saveStorage();
         Wheel.drawWheel(wheelCanvas, state.segments);
+      });
+
+      const time = document.createElement("input");
+      time.className = "segTime";
+      time.type = "number";
+      time.min = "5";
+      time.max = "600";
+      time.step = "5";
+      time.value = String(seg.seconds ?? 60);
+      time.title = "وقت التحدي بالثواني";
+      time.addEventListener("input", (e) => {
+        const v = Number(e.target.value);
+        seg.seconds = Wheel.clamp(Number.isFinite(v) ? v : 60, 5, 600);
+        validate();
+        saveStorage();
       });
 
       const del = document.createElement("button");
@@ -189,7 +200,8 @@
       });
 
       row.appendChild(index);
-      row.appendChild(input);
+      row.appendChild(text);
+      row.appendChild(time);
       row.appendChild(del);
       segmentsList.appendChild(row);
     });
@@ -201,9 +213,9 @@
     const c = Wheel.clamp(Number(newCount) || 8, 8, 20);
     state.count = c;
 
-    const currentTexts = state.segments.map(s => s.text);
-    const nextTexts = Array.from({ length: c }, (_, i) => currentTexts[i] ?? "");
-    state.segments = Wheel.normalizeSegments(nextTexts);
+    const current = state.segments.map(s => ({ text: s.text, seconds: s.seconds }));
+    const next = Array.from({ length: c }, (_, i) => current[i] ?? ({ text:"", seconds:60 }));
+    state.segments = Wheel.normalizeSegments(next);
 
     rebuildSegmentsInputs();
     saveStorage();
@@ -211,11 +223,15 @@
   }
 
   function validate() {
-    const ok = state.segments.length >= 8 && state.segments.every(s => (s.text || "").trim().length > 0);
+    const ok =
+      state.segments.length >= 8 &&
+      state.segments.every(s => (s.text || "").trim().length > 0) &&
+      state.segments.every(s => Number.isFinite(s.seconds) && s.seconds >= 5);
+
     startBtn.disabled = !ok;
   }
 
-  // timer
+  // Timer
   function stopTimer() {
     state.timerRunning = false;
     timerToggleBtn.textContent = "▶";
@@ -241,7 +257,7 @@
 
   function resetTimer() {
     stopTimer();
-    state.timeLeft = 60;
+    state.timeLeft = state.timerBase;   // ✅ يرجع حسب وقت التحدي الحالي
     renderTimer();
   }
 
@@ -251,11 +267,13 @@
     else timerText.classList.remove("danger");
   }
 
-  // winner
-  function showWinner(text) {
-    state.winner = text;
-    winnerText.textContent = text;
+  // Winner
+  function showWinner(seg) {
+    state.winner = seg;
+    winnerText.textContent = seg.text;
     winnerWrap.classList.remove("hidden");
+
+    state.timerBase = Wheel.clamp(Number(seg.seconds) || 60, 5, 600); // ✅ وقت حسب التحدي
     resetTimer();
     playWin();
   }
@@ -266,7 +284,7 @@
     stopTimer();
   }
 
-  // spin
+  // Spin
   function spinWheel() {
     if (state.isSpinning) return;
     if (state.segments.length < 2) return;
@@ -280,8 +298,7 @@
     spinBtn.classList.add("spinning");
 
     const spins = 1800 + Math.random() * 1800;
-    const newRotation = state.rotation + spins;
-    state.rotation = newRotation;
+    state.rotation = state.rotation + spins;
 
     const totalDuration = 5000;
     const start = performance.now();
@@ -322,10 +339,10 @@
     const winningIndex = Math.floor(winningAngle / sliceAngle);
 
     const winner = state.segments[winningIndex];
-    if (winner && winner.text) showWinner(winner.text);
+    if (winner && winner.text) showWinner(winner);
   }
 
-  // LINK EXPORT/IMPORT
+  // Link Export/Import
   function toBase64Url(str){
     const bytes = new TextEncoder().encode(str);
     let bin = "";
@@ -345,12 +362,12 @@
 
   function buildShareLink(){
     const payload = {
-      v: 1,
+      v: 2,
       count: state.count,
-      segments: state.segments.map(s => (s.text || "").trim())
+      segments: state.segments.map(s => ({ text: (s.text||"").trim(), seconds: s.seconds }))
     };
 
-    if (payload.segments.some(t => !t)) {
+    if (payload.segments.some(x => !x.text)) {
       alert("لازم تكتبي كل الخانات قبل التصدير 😄");
       return null;
     }
@@ -367,14 +384,19 @@
       const data = JSON.parse(json);
 
       if (!data || !Array.isArray(data.segments)) throw new Error("Invalid data");
-      const cnt = Number(data.count) || data.segments.length;
-      const safeCount = Wheel.clamp(cnt, 8, 20);
 
-      const texts = data.segments.slice(0, safeCount).map(x => String(x || "").trim());
-      if (texts.length < 8) throw new Error("Min 8");
+      // v1 ممكن تبقى strings — نعالجها
+      const rawSegs = data.segments;
+      const countGuess = Number(data.count) || rawSegs.length;
+      const safeCount = Wheel.clamp(countGuess, 8, 20);
+
+      const items = rawSegs.slice(0, safeCount).map(it => {
+        if (typeof it === "string") return { text: it, seconds: 60 };
+        return { text: String(it?.text ?? ""), seconds: Number(it?.seconds ?? it?.s ?? 60) };
+      });
 
       state.count = safeCount;
-      state.segments = Wheel.normalizeSegments(texts);
+      state.segments = Wheel.normalizeSegments(items);
 
       countInput.value = String(state.count);
       rebuildSegmentsInputs();
@@ -397,7 +419,7 @@
     return importFromLinkData(d);
   }
 
-  // events
+  // Events
   countInput.addEventListener("change", (e) => setCount(e.target.value));
   countInput.addEventListener("input", (e) => setCount(e.target.value));
 
@@ -464,14 +486,12 @@
     }
   });
 
-  // init
+  // Init
   loadStorage();
   countInput.value = String(state.count);
   rebuildSegmentsInputs();
   Wheel.drawWheel(wheelCanvas, state.segments);
   renderTimer();
   showSetup();
-
-  // auto import if link has ?d=
   tryAutoImportFromUrl();
 })();
