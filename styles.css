@@ -248,25 +248,45 @@ body{
 
 .pointer{
   position:absolute;
-  top: 0;
-  width:0; height:0;
-  border-left: 22px solid transparent;
-  border-right: 22px solid transparent;
-  border-bottom: 44px solid #0f172a;
-  filter: drop-shadow(0 10px 14px rgba(15,23,42,.18));
-  transform: translateY(10px);
+  top: 6px;
+  width: 54px;
+  height: 54px;
   z-index: 3;
+  transform: translateY(0);
+  filter: drop-shadow(0 10px 14px rgba(15,23,42,.22));
 }
+
+/* جسم السهم */
+.pointer::before{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:0;
+  width: 18px;
+  height: 40px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #111827, #0f172a 60%, #020617);
+  border-radius: 12px;
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,.15),
+    inset 0 -3px 0 rgba(0,0,0,.35);
+}
+
+/* رأس السهم */
 .pointer::after{
   content:"";
   position:absolute;
-  left:-21px; top: 3px;
-  width:0;height:0;
-  border-left: 21px solid transparent;
-  border-right: 21px solid transparent;
-  border-bottom: 41px solid rgba(255,255,255,.85);
-  opacity:.25;
+  left:50%;
+  bottom:-12px;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 22px solid transparent;
+  border-right: 22px solid transparent;
+  border-top: 26px solid #0f172a;
+  filter: drop-shadow(0 3px 3px rgba(0,0,0,.25));
 }
+
 
 .wheelShell{
   width: 360px; height: 360px;
