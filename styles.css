@@ -31,11 +31,7 @@ body{
 }
 .blob-a{ top:-20%; left:-10%; background:#818cf8; }
 .blob-b{ bottom:-20%; right:-10%; background:#f9a8d4; animation-delay:1.2s; }
-
-@keyframes pulse{
-  0%,100%{ transform:scale(1); }
-  50%{ transform:scale(1.05); }
-}
+@keyframes pulse{ 0%,100%{ transform:scale(1);} 50%{ transform:scale(1.05);} }
 
 .topbar{
   position:fixed; top:16px; left:16px; right:16px;
@@ -80,6 +76,12 @@ body{
 
 .label{ font-weight:900; color:#1e293b; }
 .hint{ color:var(--muted); font-size:12px; font-weight:800; }
+.hintline{
+  margin-top: 10px;
+  color: var(--muted);
+  font-weight: 900;
+  font-size: 12px;
+}
 
 .input{
   height: 46px;
@@ -116,40 +118,61 @@ body{
   display:flex;
   flex-direction:column;
   gap:10px;
-  max-height: 420px;
+  max-height: 460px;
   overflow:auto;
   padding: 4px;
 }
 
 .segRow{
-  display:flex;
+  display:grid;
+  grid-template-columns: 36px 1fr 120px 52px;
   gap:10px;
-  align-items:center;
+  align-items:start;
   animation: fadeIn .2s ease-out;
+}
+@media (max-width: 520px){
+  .segRow{
+    grid-template-columns: 36px 1fr 90px 52px;
+  }
 }
 @keyframes fadeIn{ from{opacity:0; transform: translateY(4px);} to{opacity:1; transform: translateY(0);} }
 
 .index{
-  width:32px;
+  width:36px;
   text-align:center;
   color:#94a3b8;
   font-weight:900;
+  padding-top: 10px;
 }
 
-.segInput{
-  flex:1;
-  height: 48px;
-  padding: 0 14px;
+.segText{
+  width:100%;
+  min-height: 72px; /* تكبير الخانة */
+  padding: 10px 12px;
   border:1px solid var(--border);
   border-radius: 14px;
   outline:none;
   font-weight:900;
   background:white;
+  resize: vertical;
+  line-height: 1.3;
 }
-.segInput:focus{ box-shadow: 0 0 0 3px rgba(79,70,229,.18); border-color:#c7d2fe; }
+.segText:focus{ box-shadow: 0 0 0 3px rgba(79,70,229,.18); border-color:#c7d2fe; }
+
+.segTime{
+  height: 46px;
+  padding: 0 10px;
+  border:1px solid var(--border);
+  border-radius: 14px;
+  outline:none;
+  font-weight:1000;
+  background:white;
+  text-align:center;
+}
+.segTime:focus{ box-shadow: 0 0 0 3px rgba(79,70,229,.18); border-color:#c7d2fe; }
 
 .delBtn{
-  width: 46px; height: 46px;
+  width: 52px; height: 46px;
   border-radius: 14px;
   border: none;
   background: transparent;
@@ -157,6 +180,7 @@ body{
   font-size: 18px;
   opacity: .15;
   transition: .15s ease;
+  margin-top: 2px;
 }
 .segRow:hover .delBtn{ opacity: .9; }
 .delBtn:disabled{ opacity:.15; cursor:not-allowed; }
@@ -284,8 +308,6 @@ body{
   display:flex; align-items:center; gap:14px;
   box-shadow: var(--shadow2);
   transition: .15s ease;
-  position:relative;
-  overflow:hidden;
 }
 .spin:hover{ background: var(--indigo2); transform: translateY(-2px); box-shadow: 0 22px 34px rgba(79,70,229,.35); }
 .spin:disabled{ opacity:.65; transform:none; cursor:not-allowed; box-shadow:none; }
