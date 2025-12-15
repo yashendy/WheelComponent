@@ -1,14 +1,18 @@
 :root{
-  --bg:#f8fafc;
-  --text:#0f172a;
+  --bg:#fdfcff;
+  --text:#1e293b;
   --muted:#64748b;
-  --card:#ffffffcc;
-  --border:#e2e8f0;
-  --indigo:#4f46e5;
-  --indigo2:#4338ca;
-  --shadow: 0 20px 40px rgba(15,23,42,.12);
-  --shadow2: 0 10px 20px rgba(79,70,229,.25);
-  --radius: 22px;
+  --card:#ffffff;
+  --border:#e5e7eb;
+
+  --main:#6366f1;
+  --main-dark:#4f46e5;
+  --accent:#f97316;
+
+  --shadow:0 18px 30px rgba(99,102,241,.18);
+  --shadow-soft:0 10px 20px rgba(0,0,0,.08);
+
+  --radius:26px;
 }
 
 *{ box-sizing:border-box; }
@@ -16,31 +20,38 @@ html,body{ height:100%; }
 
 body{
   margin:0;
-  font-family: "Cairo", sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  overflow-x:hidden;
+  font-family:"Cairo",system-ui,sans-serif;
+  background: linear-gradient(135deg,#fdf4ff,#ecfeff);
+  color:var(--text);
 }
 
-/* الخلفية */
+/* ================= خلفية ================= */
 .bg-blobs{ position:fixed; inset:0; pointer-events:none; z-index:0; }
 .blob{
   position:absolute;
-  width:55vw; height:55vw;
+  width:60vw;height:60vw;
   border-radius:50%;
-  filter: blur(110px);
-  opacity:.22;
-  animation: pulse 4s ease-in-out infinite;
+  filter:blur(120px);
+  opacity:.25;
 }
-.blob-a{ top:-20%; left:-10%; background:#818cf8; }
-.blob-b{ bottom:-20%; right:-10%; background:#f9a8d4; }
+.blob-a{ top:-20%; left:-10%; background:#c7d2fe; }
+.blob-b{ bottom:-20%; right:-10%; background:#fbcfe8; }
 
-@keyframes pulse{
-  0%,100%{ transform:scale(1); }
-  50%{ transform:scale(1.05); }
+/* ================= Layout ================= */
+.container{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:100px 16px 40px;
+  position:relative;
+  z-index:1;
 }
 
-/* Topbar */
+.view{ width:min(900px,100%); }
+.hidden{ display:none!important; }
+
+/* ================= Topbar ================= */
 .topbar{
   position:fixed;
   top:16px; left:16px; right:16px;
@@ -49,37 +60,180 @@ body{
   z-index:10;
 }
 
-/* Layout */
-.container{
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:90px 16px 40px;
-  position:relative;
-  z-index:1;
-}
-
-.view{ width:min(980px,100%); }
-.hidden{ display:none!important; }
-
-/* عنوان العجلة */
-.wheel-title{
-  text-align:center;
-  font-size:28px;
-  font-weight:900;
-  color:#4338ca;
-  margin-bottom:8px;
-  background:rgba(255,255,255,.9);
-  padding:8px 22px;
+.chip, .iconbtn{
+  background:white;
+  border:1px solid var(--border);
   border-radius:999px;
-  box-shadow:0 10px 20px rgba(79,70,229,.25);
+  padding:10px 16px;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:var(--shadow-soft);
 }
 
+.iconbtn{
+  width:46px;height:46px;
+  display:grid;
+  place-items:center;
+}
+
+/* ================= Setup ================= */
+.title{
+  text-align:center;
+  margin-bottom:24px;
+}
+.title h1{
+  margin:0;
+  font-size:42px;
+  font-weight:900;
+  color:var(--main-dark);
+}
+.title p{
+  margin-top:6px;
+  font-weight:700;
+  color:var(--muted);
+}
+
+.card{
+  background:var(--card);
+  border-radius:var(--radius);
+  padding:22px;
+  box-shadow:var(--shadow);
+}
+
+/* inputs */
+.row{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+.input{
+  height:48px;
+  padding:0 14px;
+  border-radius:16px;
+  border:2px solid var(--border);
+  font-weight:900;
+}
+.input:focus{
+  outline:none;
+  border-color:var(--main);
+}
+
+.label{ font-weight:900; }
+.hint{ font-size:12px;color:var(--muted); }
+
+.subhead{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.badge{
+  background:#eef2ff;
+  color:#4338ca;
+  padding:6px 12px;
+  border-radius:999px;
+  font-weight:900;
+}
+
+/* قائمة التحديات */
+.list{
+  margin-top:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.segRow{
+  background:#f8fafc;
+  border-radius:18px;
+  padding:12px;
+  display:grid;
+  grid-template-columns:36px 1fr 100px 44px;
+  gap:10px;
+  align-items:center;
+}
+
+.index{
+  font-weight:900;
+  color:#94a3b8;
+  text-align:center;
+}
+
+.segText{
+  min-height:70px;
+  resize:vertical;
+  padding:10px 12px;
+  border-radius:14px;
+  border:2px solid var(--border);
+  font-weight:900;
+}
+.segTime{
+  height:46px;
+  border-radius:14px;
+  border:2px solid var(--border);
+  text-align:center;
+  font-weight:900;
+}
+
+.delBtn{
+  border:none;
+  background:#fee2e2;
+  color:#b91c1c;
+  border-radius:12px;
+  cursor:pointer;
+}
+
+/* زرار */
+.primary{
+  width:100%;
+  height:60px;
+  border:none;
+  border-radius:20px;
+  background:var(--main);
+  color:white;
+  font-size:22px;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:var(--shadow);
+}
+.primary:hover{ background:var(--main-dark); }
+
+/* ================= Wheel ================= */
 #wheelView{
   display:flex;
   flex-direction:column;
   align-items:center;
+}
+
+/* عنوان اللعبة */
+.wheel-title{
+  margin-bottom:14px;
+  font-size:30px;
+  font-weight:900;
+  background:white;
+  padding:10px 26px;
+  border-radius:999px;
+  color:var(--main-dark);
+  box-shadow:var(--shadow-soft);
+}
+
+/* الفائز */
+.winnerWrap{
+  margin-bottom:16px;
+}
+.winnerCard{
+  background:linear-gradient(135deg,#fb923c,#f97316);
+  color:white;
+  border-radius:28px;
+  padding:18px 20px;
+  text-align:center;
+  box-shadow:var(--shadow);
+  width:min(520px,100%);
+}
+.winnerText{
+  font-size:32px;
+  font-weight:900;
 }
 
 /* العجلة */
@@ -87,92 +241,83 @@ body{
   position:relative;
   display:grid;
   place-items:center;
+  padding:20px 0;
 }
 
-/* ===== السهم الرفيع الواقعي ===== */
+/* ===== السهم تحت (للأطفال) ===== */
 .pointer{
   position:absolute;
-  top:6px;
-  width:54px;
-  height:54px;
+  bottom:-12px;
+  width:50px;
+  height:50px;
   z-index:3;
-  filter: drop-shadow(0 10px 14px rgba(15,23,42,.22));
 }
 
-/* جسم السهم */
+/* جسم */
 .pointer::before{
   content:"";
   position:absolute;
   left:50%;
-  top:6px;
+  bottom:14px;
   width:14px;
-  height:38px;
+  height:30px;
   transform:translateX(-50%);
-  background:linear-gradient(180deg,#111827,#0f172a 60%,#020617);
+  background:#1e293b;
   border-radius:999px;
-  box-shadow:
-    inset 0 2px 0 rgba(255,255,255,.15),
-    inset 0 -3px 0 rgba(0,0,0,.35);
 }
 
-/* رأس السهم */
+/* رأس */
 .pointer::after{
   content:"";
   position:absolute;
   left:50%;
-  top:-12px;
+  bottom:0;
   transform:translateX(-50%);
   width:0;height:0;
-  border-left:16px solid transparent;
-  border-right:16px solid transparent;
-  border-bottom:22px solid #0f172a;
+  border-left:18px solid transparent;
+  border-right:18px solid transparent;
+  border-top:22px solid #1e293b;
 }
 
 /* العجلة نفسها */
 .wheelShell{
-  width:360px;
-  height:360px;
+  width:360px;height:360px;
   border-radius:50%;
   overflow:hidden;
-  border:10px solid #0f172a;
+  border:10px solid #1e293b;
+  background:white;
   box-shadow:var(--shadow);
-  transition:transform 5s cubic-bezier(0.25,0.1,0.25,1);
+  transition:transform 5s cubic-bezier(.25,.1,.25,1);
 }
 @media(min-width:720px){
-  .wheelShell{ width:440px; height:440px; }
+  .wheelShell{ width:440px;height:440px; }
 }
 
-#wheelCanvas{ width:100%; height:100%; }
+#wheelCanvas{ width:100%;height:100%; }
 
 .pin{
   position:absolute;
-  width:74px; height:74px;
+  width:70px;height:70px;
   border-radius:50%;
   background:white;
-  border:6px solid #e2e8f0;
+  border:6px solid var(--border);
   display:grid;
   place-items:center;
-  font-size:28px;
-  z-index:2;
+  font-size:26px;
 }
 
 /* زر الدوران */
-.spinRow{ margin-top:14px; }
-
+.spinRow{ margin-top:18px; }
 .spin{
-  height:66px;
-  padding:0 34px;
+  height:70px;
+  padding:0 40px;
   border:none;
   border-radius:999px;
-  background:var(--indigo);
+  background:var(--accent);
   color:white;
-  font-size:22px;
+  font-size:24px;
   font-weight:900;
   cursor:pointer;
-  display:flex;
-  gap:14px;
-  align-items:center;
-  box-shadow:var(--shadow2);
+  box-shadow:var(--shadow);
 }
-
-.spinIcon{ font-size:26px; }
+.spin:hover{ filter:brightness(.95); }
