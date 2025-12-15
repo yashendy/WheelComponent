@@ -443,41 +443,42 @@ button{ font-family:"Cairo",sans-serif; }
 
 /* ===== السهم تحت وقريب من العجلة ويؤشر عليها ===== */
 /* ===== السهم فوق العجلة ورأسه لتحت ===== */
+/* ===== سهم أطول وقريب للعجلة (فوقها ورأسه لتحت) ===== */
 .pointer{
   position:absolute;
-  top: -10px;              /* فوق إطار العجلة */
+  top: -6px;                 /* أقرب للعجلة */
   width:56px;
-  height:56px;
+  height:72px;               /* أطول */
   z-index:4;
   filter: drop-shadow(0 10px 14px rgba(15,23,42,.22));
   pointer-events:none;
 }
 
-/* جسم السهم */
+/* جسم السهم (أطول) */
 .pointer::before{
   content:"";
   position:absolute;
   left:50%;
-  top: 0px;                /* جسم السهم يبدأ من فوق */
+  top: 0;
   width:12px;
-  height:28px;
+  height:44px;               /* طول الجسم */
   transform:translateX(-50%);
   background:#1e293b;
   border-radius:999px;
   box-shadow: inset 0 2px 0 rgba(255,255,255,.18);
 }
 
-/* رأس السهم لتحت (يشاور على العجلة) */
+/* رأس السهم لتحت (يلمس تقريبًا إطار العجلة) */
 .pointer::after{
   content:"";
   position:absolute;
   left:50%;
-  top: 24px;               /* مكان الرأس قريب من إطار العجلة */
+  top: 40px;                 /* نزل الرأس لتحت */
   transform:translateX(-50%);
   width:0;height:0;
   border-left:16px solid transparent;
   border-right:16px solid transparent;
-  border-top:22px solid #1e293b;  /* رأس لتحت */
+  border-top:26px solid #1e293b;  /* رأس أطول لتحت */
 }
 
 
