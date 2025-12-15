@@ -442,9 +442,10 @@ button{ font-family:"Cairo",sans-serif; }
 }
 
 /* ===== السهم تحت وقريب من العجلة ويؤشر عليها ===== */
+/* ===== السهم فوق العجلة ورأسه لتحت ===== */
 .pointer{
   position:absolute;
-  bottom: -2px;              /* قريب جدًا من إطار العجلة */
+  top: -10px;              /* فوق إطار العجلة */
   width:56px;
   height:56px;
   z-index:4;
@@ -457,27 +458,28 @@ button{ font-family:"Cairo",sans-serif; }
   content:"";
   position:absolute;
   left:50%;
-  bottom: 18px;              /* يطلع لفوق ناحية العجلة */
+  top: 0px;                /* جسم السهم يبدأ من فوق */
   width:12px;
   height:28px;
   transform:translateX(-50%);
-  background: #1e293b;
+  background:#1e293b;
   border-radius:999px;
   box-shadow: inset 0 2px 0 rgba(255,255,255,.18);
 }
 
-/* رأس السهم (طرفه لفوق داخل اتجاه العجلة) */
+/* رأس السهم لتحت (يشاور على العجلة) */
 .pointer::after{
   content:"";
   position:absolute;
   left:50%;
-  bottom: 34px;              /* يخلي الطرف يطلع ويقرب للعجلة */
+  top: 24px;               /* مكان الرأس قريب من إطار العجلة */
   transform:translateX(-50%);
   width:0;height:0;
   border-left:16px solid transparent;
   border-right:16px solid transparent;
-  border-bottom:22px solid #1e293b;  /* رأس لفوق */
+  border-top:22px solid #1e293b;  /* رأس لتحت */
 }
+
 
 .wheelShell{
   width:360px;height:360px;
