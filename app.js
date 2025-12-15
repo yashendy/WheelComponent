@@ -45,6 +45,7 @@
 
   const STORAGE_KEY = "wheel_segments_v2";
   const STORAGE_COUNT = "wheel_count_v2";
+  const STORAGE_ROT = "wheel_rotation_v2"; // ✅ NEW
 
   function loadStorage() {
     try{
@@ -57,19 +58,33 @@
         if (Array.isArray(arr) && arr.length >= 8) {
           state.count = Wheel.clamp(arr.length, 8, 20);
           state.segments = Wheel.normalizeSegments(arr);
-          return;
         }
       }
+
+      // ✅ NEW: استرجاع آخر دوران (عشان العجلة تفضل واقفة على آخر نتيجة)
+      const rot = Number(localStorage.getItem(STORAGE_ROT));
+      if (Number.isFinite(rot)) state.rotation = rot;
+
     } catch {}
 
     // افتراضي: 8 خانات نص فاضي + وقت 60
-    state.segments = Wheel.normalizeSegments(Array.from({length: state.count}, () => ({ text:"", seconds:60 })));
+    if (!state.segments.length) {
+      state.segments = Wheel.normalizeSegments(
+        Array.from({length: state.count}, () => ({ text:"", seconds:60 }))
+      );
+    }
   }
 
   function saveStorage() {
     try{
       localStorage.setItem(STORAGE_COUNT, String(state.count));
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.segments.map(s => ({ text: s.text, seconds: s.seconds }))));
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(state.segments.map(s => ({ text: s.text, seconds: s.seconds })))
+      );
+
+      // ✅ NEW
+      localStorage.setItem(STORAGE_ROT, String(state.rotation));
     } catch {}
   }
 
@@ -81,44 +96,68 @@
     return audioCtx;
   }
 
+  // صوت دوران (تيك)
   function playTick() {
     if (!state.soundEnabled) return;
     const ctx = ensureAudio();
+
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
     osc.type = "triangle";
     osc.frequency.setValueAtTime(800, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.1);
+    osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + 0.08);
 
-    gain.gain.setValueAtTime(0.1, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.11, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
 
     osc.connect(gain);
     gain.connect(ctx.destination);
 
     osc.start();
-    osc.stop(ctx.currentTime + 0.1);
+    osc.stop(ctx.currentTime + 0.08);
   }
 
+  // ✅ NEW: صوت ساعة (كل ثانية للعد التنازلي)
+  function playClockTick(){
+    if (!state.soundEnabled) return;
+    const ctx = ensureAudio();
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = "square";
+    osc.frequency.setValueAtTime(1200, ctx.currentTime);
+
+    gain.gain.setValueAtTime(0.06, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.03);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.03);
+  }
+
+  // صوت فوز
   function playWin() {
     if (!state.soundEnabled) return;
-    if (!audioCtx) return;
-    const ctx = audioCtx;
+    const ctx = ensureAudio();
 
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
     osc.type = "sine";
-    osc.frequency.setValueAtTime(400, ctx.currentTime);
-    osc.frequency.linearRampToValueAtTime(600, ctx.currentTime + 0.1);
-    osc.frequency.linearRampToValueAtTime(1000, ctx.currentTime + 0.3);
+    osc.frequency.setValueAtTime(420, ctx.currentTime);
+    osc.frequency.linearRampToValueAtTime(660, ctx.currentTime + 0.12);
+    osc.frequency.linearRampToValueAtTime(980, ctx.currentTime + 0.32);
 
-    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+    gain.gain.setValueAtTime(0.22, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.8);
 
     osc.connect(gain);
     gain.connect(ctx.destination);
+
     osc.start();
     osc.stop(ctx.currentTime + 0.8);
   }
@@ -157,7 +196,7 @@
 
       const text = document.createElement("textarea");
       text.className = "segText";
-      text.maxLength = 100;                 // ✅ 100 حرف
+      text.maxLength = 100;
       text.placeholder = `اكتبي التحدي ${idx + 1} (حتى 100 حرف)`;
       text.value = seg.text || "";
       text.addEventListener("input", (e) => {
@@ -243,11 +282,17 @@
 
   function startTimer() {
     if (state.timeLeft <= 0) return;
+    ensureAudio(); // ✅ عشان الصوت يشتغل على طول
     state.timerRunning = true;
     timerToggleBtn.textContent = "⏸";
+
     state.timerId = setInterval(() => {
       state.timeLeft = Math.max(0, state.timeLeft - 1);
       renderTimer();
+
+      // ✅ NEW: تيك ساعة كل ثانية (طالما لسه فيه وقت)
+      if (state.timeLeft > 0) playClockTick();
+
       if (state.timeLeft === 0) {
         stopTimer();
         playWin();
@@ -257,7 +302,7 @@
 
   function resetTimer() {
     stopTimer();
-    state.timeLeft = state.timerBase;   // ✅ يرجع حسب وقت التحدي الحالي
+    state.timeLeft = state.timerBase;
     renderTimer();
   }
 
@@ -273,7 +318,7 @@
     winnerText.textContent = seg.text;
     winnerWrap.classList.remove("hidden");
 
-    state.timerBase = Wheel.clamp(Number(seg.seconds) || 60, 5, 600); // ✅ وقت حسب التحدي
+    state.timerBase = Wheel.clamp(Number(seg.seconds) || 60, 5, 600);
     resetTimer();
     playWin();
   }
@@ -289,6 +334,7 @@
     if (state.isSpinning) return;
     if (state.segments.length < 2) return;
 
+    ensureAudio(); // ✅ عشان صوت الدوران يشتغل (متطلبات المتصفح)
     hideWinner();
     stopTimer();
     state.isSpinning = true;
@@ -299,6 +345,9 @@
 
     const spins = 1800 + Math.random() * 1800;
     state.rotation = state.rotation + spins;
+
+    // ✅ حفظ الدوران فورًا
+    saveStorage();
 
     const totalDuration = 5000;
     const start = performance.now();
@@ -340,6 +389,9 @@
 
     const winner = state.segments[winningIndex];
     if (winner && winner.text) showWinner(winner);
+
+    // ✅ حفظ آخر وضع للعجلة بعد ما توقف
+    saveStorage();
   }
 
   // Link Export/Import
@@ -385,7 +437,6 @@
 
       if (!data || !Array.isArray(data.segments)) throw new Error("Invalid data");
 
-      // v1 ممكن تبقى strings — نعالجها
       const rawSegs = data.segments;
       const countGuess = Number(data.count) || rawSegs.length;
       const safeCount = Wheel.clamp(countGuess, 8, 20);
@@ -423,7 +474,10 @@
   countInput.addEventListener("change", (e) => setCount(e.target.value));
   countInput.addEventListener("input", (e) => setCount(e.target.value));
 
-  startBtn.addEventListener("click", () => showWheel());
+  startBtn.addEventListener("click", () => {
+    ensureAudio(); // ✅
+    showWheel();
+  });
 
   backBtn.addEventListener("click", () => {
     if (state.isSpinning) return;
@@ -434,6 +488,7 @@
   soundBtn.addEventListener("click", () => {
     state.soundEnabled = !state.soundEnabled;
     soundIcon.textContent = state.soundEnabled ? "🔊" : "🔇";
+    if (state.soundEnabled) ensureAudio(); // ✅
   });
 
   spinBtn.addEventListener("click", spinWheel);
@@ -443,6 +498,7 @@
 
   timerToggleBtn.addEventListener("click", () => {
     if (!state.winner) return;
+    ensureAudio(); // ✅
     if (state.timerRunning) stopTimer();
     else startTimer();
   });
@@ -490,7 +546,15 @@
   loadStorage();
   countInput.value = String(state.count);
   rebuildSegmentsInputs();
+
   Wheel.drawWheel(wheelCanvas, state.segments);
+
+  // ✅ NEW: طبّقي آخر دوران فورًا (بدون أنيميشن) عشان تفضل واقفة على آخر نتيجة
+  wheelShell.style.transition = "none";
+  wheelShell.style.transform = `rotate(${state.rotation}deg)`;
+  wheelShell.offsetHeight; // force reflow
+  wheelShell.style.transition = "";
+
   renderTimer();
   showSetup();
   tryAutoImportFromUrl();
